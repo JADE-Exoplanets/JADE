@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Attia"
+    given-names: "M."
+    orcid: "https://orcid.org/0000-0002-7971-7439"
+  - family-names: "Bourrier"
+    given-names: "V."
+    orcid: "https://orcid.org/0000-0002-9148-034X"
+  - family-names: "et al."
+title: "JADE: Joining Atmosphere and Dynamics for Exoplanets"
+version: 1.0.0
+doi: 10.1051/0004-6361/202039452
+date-released: 2021-03-01
+url: "https://github.com/JADE-Exoplanets/JADE"
+repository-code: "https://github.com/JADE-Exoplanets/JADE"
+license: BSD-3-Clause
+references:
+  - type: article
+    authors:
+      - family-names: "Attia"
+        given-names: "M."
+      - family-names: "Bourrier"
+        given-names: "V."
+      - family-names: "Eggenberger"
+        given-names: "P."
+      - family-names: "et al."
+    title: "The JADE code: Coupling secular exoplanetary dynamics and photo-evaporation"
+    journal: "Astronomy & Astrophysics"
+    volume: 647
+    article-number: A40
+    year: 2021
+    doi: 10.1051/0004-6361/202039452
+    url: "https://doi.org/10.1051/0004-6361/202039452"
+abstract: >
+  JADE (Joining Atmosphere and Dynamics for Exoplanets) couples the most relevant mechanisms affecting close-orbiting exoplanets. 
+  It simulates the evolution of a hierarchical three-body system to monitor von Zeipel–Lidov–Kozai resonances 
+  using a secular formalism truncated up to the 4th (hexadecapolar) order. JADE integrates short-range forces dampening the resonance 
+  (tidal and rotational dissipation, general relativistic precession) while modeling the inner planet as an extended object
+  with a complex structure (iron nucleus surrounded by a silicate mantle, topped by an atmosphere of H/He and trace metals).
+  The atmosphere dynamically evolves in response to orbital changes, stellar radiation, internal heating, and XUV-induced photo-evaporation.
+keywords:
+  - exoplanets
+  - planetary dynamics
+  - hierarchical systems
+  - von Zeipel-Lidov-Kozai
+  - planetary internal structure
+  - atmospheric evolution
+  - atmospheric evaporation

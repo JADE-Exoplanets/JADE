@@ -1,0 +1,20 @@
+# Core scientific and numerical packages
+numpy>=1.22.0
+scipy>=1.7.0
+matplotlib>=3.5.0
+pandas>=1.5.0
+astropy>=5.2.0
+
+# Differential equation solvers
+jitcode>=1.7.0
+jitcxde_common>=1.5.0
+symengine>=0.7.0
+
+# Statistical and MCMC tools
+emcee>=3.1.0
+corner>=2.2.0
+arviz>=0.11.0
+mcint
+
+# Parallelization
+pathos>=0.2.8

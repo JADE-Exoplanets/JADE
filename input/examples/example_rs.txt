@@ -1,0 +1,150 @@
+##############################################################################################################################
+### INPUT FILE FOR THE JADE CODE
+##############################################################################################################################
+#     + Structure: "key = value"
+#          - All keys are defined below.
+#          - Values will be casted by JADE to the correct type.
+#          - For booleans, they should be spelled "True" and "False."
+#     + Blank lines, and lines starting with # will be skipped by JADE.
+##############################################################################################################################
+
+
+##############################################################################################################################
+### Global settings for the simulation
+##############################################################################################################################
+#     + name = name of the simulation. Defines the output file (npz) names.
+#     + output_dir = directory (relative to saved_data/) in which the output must be saved.
+#     + output_freq = frequency of output saving. Must be an integer between 0 and 100. Example: a value of 5 saves every 5% of the simulation.
+#     + output_npts = total number of points to be saved. If empty, save all the integrator points.
+#     + age =  ending time of the simulation in Myr.
+#     + t_init =  starting time of the simulation in Myr.
+#     + dyn =  defines if the orbits dynamical evolution has to be taken into account.
+#     + orderdyn = order of the dynamical secular equations. Unused if dyn is set to False.
+#     + perturber =  defines if the perturber is present.
+#     + tides =  defines if tides have to be taken into account.
+#     + relat =  defines if relativistic post-Newtonian corrections have to be taken into account.
+#     + roche = defines if the simulation halts when the planet is beyond the stellar Roche limit.
+#     + atmo = defines if the atmospheric evolution has to be taken into account.
+#     + atmo_grid_path = path to an atmospheric grid, relative to the 'atmo_grids/' directory. If empty, no grid is used.
+#     + atmo_acc = set to True for a more accurate but more time-consuming radius retrieval.
+#     + evap = set to True for photo-evaporation.
+#     + t_atmo = sequence of reals separated by a blank space defining the times (in Myr) of radius retrieval.
+#     + parallel = number of used CPUs for radius retrievals. Set to False (or to 0) for serial retrieval.
+#     + lazy_init = a faster initialization.
+#     + reuse =  defines if the already saved data (npz file) has to be used for the simulation. Set to False to start from scratch.
+#     + simul =  defines if the simulation has to be made.
+##############################################################################################################################
+
+name = example_rs
+output_dir = examples/example_rs
+output_freq = 100
+output_npts =     
+age = 4000.
+t_init = 10.
+
+dyn = False
+orderdyn = 4
+perturber = False
+tides = False
+relat = False
+roche = False
+
+atmo = True
+atmo_grid_path = 
+atmo_acc = False
+evap = False
+t_atmo = 
+parallel = 5
+
+lazy_init = True  
+reuse = False
+simul = True
+
+
+##############################################################################################################################
+### General parameters for the system 
+##############################################################################################################################
+#     + For the primary object = 
+#          - Ms =  mass in solar masses
+#          - Rs =  radius in solar radii
+#          - ks =  apsidal constant
+#          - Qs =  dissipation parameter
+#          - alphas =  moment of inertia parameter (I=alpha*m*R**2)
+#          - spins =  initial spin rate in rad/yr
+#          - stellar_lum = 'analytic' if the sellar luminosities have to be computed, 'tabular' if the values are given
+#          - stellar_lum_path = path for the tabular stellar luminosities, relative to the 'luminosities/' directory. Check the example for the format.
+#          - Lbol = value of the bolometric stellar luminosity in erg/s, for the 'analytic' mode
+#          - LX_Lbol_sat = saturation X-ray to bolometric stellar luminosity, for the 'analytic' mode. Default: see Attia et al. (2021) 
+#          - tau_X_bol_sat = saturation timescale, for the 'analytic' mode. Default: see Attia et al. (2021)
+#          - alpha_X_bol = saturation power-law, for the 'analytic' mode. Default: see Attia et al. (2021)            
+#     + For the main orbiting object = 
+#          - Mcore =  planetary core's mass in Jovian masses (iron nucleus + silicate mantle)
+#          - Mpl =  (initial) total mass of the planet in Jovian masses
+#          - Rpl = radius of the planet in Jovian radii. Leave empty if to be calculated by the model.
+#          - kpl =  apsidal constant
+#          - Qpl =  dissipation parameter
+#          - alphapl =  moment of inertia parameter (I=alpha*m*R**2)
+#          - spinpl =  initial spin rate in rad/yr
+#          - YHe = helium mass fraction of the H/He gaseous envelope
+#          - Zmet = metal mass fraction of the H/He gaseous envelope. Default: 0
+#          - fmantle = rocky mantle/total core mass fraction. Default: 2/3
+#     + For the perturber = 
+#          - Mpert =  mass in Jovian masses
+##############################################################################################################################
+
+        
+Ms = 1.
+Rs = 1.
+ks = 0.01
+Qs = 1e5
+alphas = 0.08
+spins = 85.
+          
+stellar_lum = analytic
+stellar_lum_path = 
+Lbol = 4e33
+LX_Lbol_sat =
+tau_X_bol_sat = 
+alpha_X_bol = 
+
+Mcore = 0.054
+Mpl = 0.06
+Rpl = 
+kpl = 0.25
+Qpl = 1e4
+alphapl = 0.25
+spinpl = 55. 
+
+YHe = 0.2
+Zmet = 0.0001
+fmantle = 0.6
+          
+Mpert = 1.
+        
+
+
+##############################################################################################################################
+### Initialization parameters for the system 
+##############################################################################################################################
+#     + Orbital elements for the inner planet (planet_) and the perturber (pert_) =
+#          - sma =  semi-major axis in AU
+#          - ecc =  eccentricity
+#          - incl =  inclination with respect to l.o.s. in degrees
+#          - lambd =  mean longitude in degrees
+#          - omega =  longitude of periastron in degrees
+#          - Omega =  longitude of ascending node in degrees
+##############################################################################################################################
+            
+planet_sma = 0.05
+planet_ecc = 0.2
+planet_incl = 90.
+planet_lambd = 0.
+planet_omega = 90.
+planet_Omega = 90.
+          
+pert_sma = 10.
+pert_ecc = 0.00001
+pert_incl = 15.
+pert_lambd = 0.
+pert_omega = 90.
+pert_Omega = 90.

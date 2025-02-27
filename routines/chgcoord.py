@@ -25,7 +25,7 @@
 # x,xd = ell2cart(ell,cmu)
 #--------------------------------------------------------
 
-from numpy import *
+import numpy as np
 
 def cart2ell(x,xd,cmu):
   #--------------------------------------------------------
@@ -43,30 +43,30 @@ def cart2ell(x,xd,cmu):
   #     v. 1.00  (jxl 11/06/2004)
   #     ell : a, lambda, k, h, q, p
   #---------------------------------------------------------
-  ell = empty(6)
-  v = empty(3)
+  ell = np.empty(6)
+  v = np.empty(3)
   #------------ normalisation des vitesses
-  smu=sqrt(cmu)
+  smu=np.sqrt(cmu)
   v[0]=xd[0]/smu
   v[1]=xd[1]/smu
   v[2]=xd[2]/smu
   #------------ quantitees utilies
-  r=sqrt(x[0]**2+x[1]**2+x[2]**2)
+  r=np.sqrt(x[0]**2+x[1]**2+x[2]**2)
   v2=v[0]**2+v[1]**2+v[2]**2
   rv=(x[0]*v[0]+x[1]*v[1]+x[2]*v[2])
   c1=x[1]*v[2]-x[2]*v[1]
   c2=x[2]*v[0]-x[0]*v[2]
   c3=x[0]*v[1]-x[1]*v[0]
   cc=c1**2+c2**2+c3**2
-  dc= sqrt(cc)
+  dc= np.sqrt(cc)
   #------------ demi grand axe a
   aa = r/(2.0-r*v2)
   if aa<=0:
-    return(array([float('nan') for _ in range(6)]))
+    return(np.array([float('nan') for _ in range(6)]))
   ell[0]=aa
-  usqa= sqrt(2.0/r-v2)
+  usqa= np.sqrt(2.0/r-v2)
   #------------ q,p
-  aux0 = sqrt(2*(cc+dc*c3))
+  aux0 = np.sqrt(2*(cc+dc*c3))
   ell[4]=-c2/aux0
   ell[5]= c1/aux0
   #------------ k,h
@@ -108,11 +108,11 @@ def ell2cart(ell,cmu):
   #     legerment remaniee le 11/6/2004
   #     sans aucun changement dans les resultats
   #--------------------------------------------------------
-  x = empty(3)
-  xp = empty(3)
-  tx1 = empty(2)
-  tx1t = empty(2)
-  rot = empty((3,2))
+  x = np.empty(3)
+  xp = np.empty(3)
+  tx1 = np.empty(2)
+  tx1t = np.empty(2)
+  rot = np.empty((3,2))
 
   a=ell[0]
   l=ell[1]
@@ -120,9 +120,9 @@ def ell2cart(ell,cmu):
   h=ell[3]
   q=ell[4]
   p=ell[5]
-  na=sqrt(cmu/a)
-  phi=sqrt(1.0-k**2-h**2)
-  ki =sqrt(1.0-q**2-p**2)
+  na=np.sqrt(cmu/a)
+  phi=np.sqrt(1.0-k**2-h**2)
+  ki =np.sqrt(1.0-q**2-p**2)
   #---- matrice de rotation ----------------------------------------------
   rot[0,0]=1.0-2.0*p**2
   rot[0,1]=2.0*p*q
@@ -133,8 +133,8 @@ def ell2cart(ell,cmu):
   #---- calcul de la longitude excentrique f -----------------------------
   #---- f = anomalie excentrique e + longitude du periapse omegapi -------
   f=keplkh2(l,k,h)
-  sf    =sin(f)
-  cf    =cos(f)
+  sf    =np.sin(f)
+  cf    =np.cos(f)
   umrsa = k*cf+h*sf
   psilmf   = (-k*sf+h*cf)/(1.0+phi)
   psiumrsa =        umrsa/(1.0+phi)
@@ -175,8 +175,8 @@ def keplkh2(l,k,h):
   imax = 20
   # depart methode d'ordre 3
   a=l
-  ca=cos(a)
-  sa=sin(a)
+  ca=np.cos(a)
+  sa=np.sin(a)
   se=k*sa-h*ca
   ce=k*ca+h*sa
   fa=a-se-l
@@ -188,8 +188,8 @@ def keplkh2(l,k,h):
   d3 =-fa/(f1a+d2*(f2a+d2*f3a))
   a=a+d3
   # methode d'ordre 6
-  ca=cos(a)
-  sa=sin(a)
+  ca=np.cos(a)
+  sa=np.sin(a)
   se=k*sa-h*ca
   ce=k*ca+h*sa
   fa=a-se-l
@@ -209,8 +209,8 @@ def keplkh2(l,k,h):
   i=0
   while True:
     i=i+1
-    ca=cos(a)
-    sa=sin(a)
+    ca=np.cos(a)
+    sa=np.sin(a)
     se=k*sa-h*ca
     fa=a-se-l
     ce=k*ca+h*sa
@@ -218,7 +218,7 @@ def keplkh2(l,k,h):
     d1=-fa/f1a
     #     si la precison n'est pas bonne, on continue les calculs
     #     en iterant la methode d'ordre 1
-    if (abs(d1)/max(1.0,abs(a)) > eps):
+    if (np.abs(d1)/np.max([1.0,np.abs(a)]) > eps):
       if (i > imax):
         #     write(*,*) 'erreur fatale dans elliptid:keplkh2'
         #     write(*,*) 'erreur :',abs(d1)/dmax1(1.0,abs(a))

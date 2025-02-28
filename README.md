@@ -28,44 +28,111 @@ JADE couples the most relevant mechanisms affecting close-orbiting exoplanets:
 
 All these components interact holistically, making JADE a unique tool for studying the long-term evolution of exoplanetary systems over Gyr timescales.
 
-## Installation
+## Installation Guide
 
-### Prerequisites
-
-JADE requires Python 3.8 (or higher) with the following packages:
-
-```bash
-# Essential packages
-numpy
-scipy
-astropy
-matplotlib
-pandas
-jitcode
-jitcxde_common
-symengine
-emcee
-corner
-arviz
-pathos
-mcint
-
-# Standard library packages (already included with Python)
-# os, sys, math, multiprocessing, bisect, functools, time, warnings, itertools, argparse, zipfile
-```
-
-### Installing JADE
-
-1. Clone the repository:
+First, clone the JADE repository:
    ```bash
    git clone https://github.com/JADE-Exoplanets/JADE.git
    cd JADE
    ```
 
-2. Install the required dependencies:
+Then, you have to set up a virtual environment. JADE performs computationally intensive simulations that require specific optimizations for best performance. We provide multiple installation methods tailored to different hardware configurations. **Be sure to activate the virtual environment you install before running any JADE simulation.**
+
+### Automated Setup (Recommended)
+
+Our setup script automatically detects your hardware and creates an optimized environment:
+
    ```bash
+   # Run the script with default settings (auto-detects best method)
+   python setup.py
+   ```
+
+The script will:
+1. Detect your CPU architecture
+2. Choose the best installation method for your system
+3. Create an optimized environment
+4. Run a performance benchmark
+
+#### Available Installation Methods
+
+Running the script with no argument makes it automatically detect the best method. You can also impose a method using the `--method` argument. The script supports three installation methods, each with different advantages:
+
+| Method | Best For | Advantages | Command |
+|--------|----------|------------|---------|
+| **conda** | Intel CPUs | MKL optimizations, 10–250$\times$ faster | `--method conda` |
+| **UV** | Apple Silicon, AMD | Guarantees Python 3.8, fast install | `--method uv` |
+| **pip** | Fallback option | Standard Python tooling | `--method pip` |
+
+#### Example Usage
+
+Aside from `--method`, the setup script also accepts the `--env` argument, to choose the name of your virtual environment, as well as the `--force` argument, to force the recreation of an existing environment. Here are some example usages:
+
+   ```bash
+   # For Intel systems with conda already installed
+   python setup.py --method conda --env jade
+   
+   # For M1/M2 Macs or AMD systems (ensures Python 3.8)
+   python setup.py --method uv
+   
+   # Force recreation of an existing environment
+   python setup.py --force
+   ```
+
+### Manual Installation Options
+
+If you prefer to set up your environment manually, follow one of these approaches:
+
+#### Option 1: Using conda (Best for Intel CPUs)
+
+   ```bash
+   # Create conda environment from provided configuration
+   conda env create -f environment.yml
+   conda activate jade
+   ```
+
+#### Option 2: Using UV (Recommended for Apple Silicon/AMD)
+
+   ```bash
+   # Install UV if not already available
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   
+   # Install Python 3.8 and create environment
+   uv python install cpython-3.8
+   uv venv --python cpython-3.8
+   source .venv/bin/activate
+   
+   # Install dependencies
+   uv pip install -r requirements.txt
+   ```
+
+#### Option 3: Standard pip/venv (Not recommended for large simulations)
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Linux/Mac
+   # or
+   # .venv\Scripts\activate  # On Windows
+   
    pip install -r requirements.txt
    ```
+
+### Performance Expectations
+
+Performance varies significantly based on installation method and hardware:
+
+- **Intel CPUs with conda (MKL), or Apple Silicon/AMD with UV (OpenBLAS)**: A standard JADE simulation (e.g., `input/examples/example_fd1.txt`) may complete in seconds
+- **Other configurations or standard pip**: The same simulation could take 10–250$\times$ longer
+
+The difference is primarily due to optimized linear algebra libraries (MKL/OpenBLAS) in numerical packages, which dramatically impact the integration of differential equations.
+
+### Troubleshooting
+
+If you experience slow performance:
+
+1. **Verify installation method**: Use `conda` for Intel systems and `uv` for others
+2. **Check Python version**: JADE requires Python 3.8
+3. **Run the benchmark**: The setup script includes a benchmark to verify performance
+4. **Memory requirements**: Ensure you have sufficient RAM (4GB minimum)
 
 ## Basic Usage
 
@@ -76,8 +143,7 @@ Once you are familiar with it, you can engage in more advanced use cases of JADE
 
 ## Citation
 
-If you use JADE in your research, please cite the follow article in your publication:
-
+If you use JADE in your research, please cite the following article in your publication:
 ```
 Attia, M., Bourrier, V., Eggenberger, P., et al. 2021, A&A, 647, A40
 ```

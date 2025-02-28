@@ -59,7 +59,7 @@ Running the script with no argument makes it automatically detect the best metho
 
 | Method | Best For | Advantages | Command |
 |--------|----------|------------|---------|
-| **conda** | Intel CPUs | MKL optimizations, 10–250$\times$ faster | `--method conda` |
+| **conda** | Intel CPUs | MKL optimizations, 10–250× faster | `--method conda` |
 | **UV** | Apple Silicon, AMD | Guarantees Python 3.8, fast install | `--method uv` |
 | **pip** | Fallback option | Standard Python tooling | `--method pip` |
 
@@ -121,7 +121,7 @@ If you prefer to set up your environment manually, follow one of these approache
 Performance varies significantly based on installation method and hardware:
 
 - **Intel CPUs with conda (MKL), or Apple Silicon/AMD with UV (OpenBLAS)**: A standard JADE simulation (e.g., `input/examples/example_fd1.txt`) may complete in seconds
-- **Other configurations or standard pip**: The same simulation could take 10–250$\times$ longer
+- **Other configurations or standard pip**: The same simulation could take 10–250× longer
 
 The difference is primarily due to optimized linear algebra libraries (MKL/OpenBLAS) in numerical packages, which dramatically impact the integration of differential equations.
 

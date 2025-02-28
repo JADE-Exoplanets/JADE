@@ -1,0 +1,21 @@
+name: jade-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - numpy=1.22.4
+  - scipy=1.7.1
+  - matplotlib=3.5.0
+  - pandas=1.5.3
+  - astropy=5.2.0
+  - symengine=0.7
+  - corner=2.2.1
+  - arviz=0.11.0
+  - pathos=0.2.8
+  - pip
+  - pip:
+    - jitcode==1.7.0
+    - jitcxde_common==1.5.2
+    - emcee==3.1.0
+    - mcint

@@ -246,6 +246,16 @@ print(f"Benchmark result: {avg_time:.2f} seconds")
 
 def setup_environment(env_name=".venv", method="auto", force=False):
     """Create and setup an optimized environment for JADE."""
+    print('')
+    print(f'{Colors.GREEN}                    ░▒▓█▓▒░░▒▓██████▓▒░░▒▓███████▓▒░░▒▓████████▓▒░              ')
+    print(f'{Colors.GREEN}                    ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░                     ')
+    print(f'{Colors.GREEN}                    ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░                     ')
+    print(f'{Colors.GREEN}                    ░▒▓█▓▒░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓██████▓▒░                ')
+    print(f'{Colors.GREEN}             ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░                     ')
+    print(f'{Colors.GREEN}             ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░                     ')
+    print(f'{Colors.GREEN}              ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░░▒▓████████▓▒░              ')
+    print('')
+
     print_header("JADE ENVIRONMENT SETUP")
     
     # Get current directory

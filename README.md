@@ -161,4 +161,4 @@ JADE is licensed under the BSD 3-Clause License—see the [LICENSE](LICENSE) fil
 ## Acknowledgments
 
 - This work has been carried out within the framework of the NCCR PlanetS supported by the Swiss National Science Foundation under grants 51NF40_182901 and 51NF40_205606. This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (project SPICE DUNE, grant agreement no. 947634; grant agreement no. 730890).
-- The main contributors to the development of this software are M. Attia, V. Bourrier, J.-B. Delisle, and V. Ruelle.
+- The main contributor to the development of this software is M. Attia, with help from J.-B. Delisle and V. Ruelle. We acknowledge the use of the Claude AI assistant (Anthropic, 2024) for code optimization.

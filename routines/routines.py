@@ -1440,17 +1440,17 @@ class JADE_Simulation:
             Rp = minimize_manual(lambda Rp: self.atmospheric_structure(t, Rp, Mp, sma, ecc), bounds, \
                                  num=10, rec=1)
         elif min_method == 'parallel':
-            global JADE_glob
-            global t_glob
-            global Mp_glob
-            global sma_glob
-            global ecc_glob
-            global acc_glob
-            JADE_glob, t_glob, Mp_glob, sma_glob, ecc_glob, acc_glob = self, t, Mp, sma, ecc, self.atmo_acc
-            Rp, epsilon = mara_search(atmospheric_structure_glob, bounds[0], bounds[1], self.parallel, self.parallel, thresh_error, n_iter_max, verbose=False)
+            GLOB_DATA['JADE'] = self
+            GLOB_DATA['t'] = t
+            GLOB_DATA['Mp'] = Mp
+            GLOB_DATA['sma'] = sma
+            GLOB_DATA['ecc'] = ecc
+            GLOB_DATA['acc'] = self.atmo_acc
+            Rp, epsilon = mara_search(atmospheric_structure_glob, bounds[0], bounds[1], 
+                                      self.parallel, self.parallel, thresh_error, n_iter_max, verbose=False)
             if Rp == -1:
                 if self.atmo_acc:
-                    acc_glob = False
+                    GLOB_DATA['acc'] = False
                     npt = self.parallel if self.parallel > 6 else 7
                     Rp, epsilon = mara_search(atmospheric_structure_glob, bounds[0], bounds[1], npt, self.parallel, verbose=False)
                     if Rp == -1:
@@ -2142,8 +2142,17 @@ class JADE_Simulation:
 #----------------------------------------------------------------------------------------------------------------------------------------
 # Dummy function for multiprocessing purposes
 
+GLOB_DATA = {
+    'JADE': None,
+    't': None,
+    'Mp': None,
+    'sma': None,
+    'ecc': None,
+    'acc': None
+}
+
 def atmospheric_structure_glob(Rp):
-    return JADE_glob.atmospheric_structure(t_glob, Rp, Mp_glob, sma_glob, ecc_glob, acc=acc_glob)
+    return GLOB_DATA['JADE'].atmospheric_structure(GLOB_DATA['t'], Rp, GLOB_DATA['Mp'], GLOB_DATA['sma'], GLOB_DATA['ecc'], acc=GLOB_DATA['acc'])
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------

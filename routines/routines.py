@@ -1440,19 +1440,13 @@ class JADE_Simulation:
             Rp = minimize_manual(lambda Rp: self.atmospheric_structure(t, Rp, Mp, sma, ecc), bounds, \
                                  num=10, rec=1)
         elif min_method == 'parallel':
-            GLOB_DATA['JADE'] = self
-            GLOB_DATA['t'] = t
-            GLOB_DATA['Mp'] = Mp
-            GLOB_DATA['sma'] = sma
-            GLOB_DATA['ecc'] = ecc
-            GLOB_DATA['acc'] = self.atmo_acc
-            Rp, epsilon = mara_search(atmospheric_structure_glob, bounds[0], bounds[1], 
-                                      self.parallel, self.parallel, thresh_error, n_iter_max, verbose=False)
+            Rp, epsilon = mara_search(None, bounds[0], bounds[1], self.parallel, self.parallel, thresh_error, n_iter_max, verbose=False,
+                                      jade=self, t=t, Mp=Mp, sma=sma, ecc=ecc, acc=self.atmo_acc)
             if Rp == -1:
                 if self.atmo_acc:
-                    GLOB_DATA['acc'] = False
                     npt = self.parallel if self.parallel > 6 else 7
-                    Rp, epsilon = mara_search(atmospheric_structure_glob, bounds[0], bounds[1], npt, self.parallel, verbose=False)
+                    Rp, epsilon = mara_search(None, bounds[0], bounds[1], npt, self.parallel, thresh_error, n_iter_max, verbose=False,
+                                              jade=self, t=t, Mp=Mp, sma=sma, ecc=ecc, acc=False)
                     if Rp == -1:
                         if not self.lazy_init and len(self.Rp) > 0: self.save_out(check_last=True)
                         raise SystemExit('Radius retrieval did not converge.')
@@ -2137,22 +2131,6 @@ class JADE_Simulation:
             self.Mp = [self.Mp[-1]]
             self.Rp = [self.Rp[-1]]
             self.t_atmo = [self.t_atmo[-1]]
-
-    
-#----------------------------------------------------------------------------------------------------------------------------------------
-# Dummy function for multiprocessing purposes
-
-GLOB_DATA = {
-    'JADE': None,
-    't': None,
-    'Mp': None,
-    'sma': None,
-    'ecc': None,
-    'acc': None
-}
-
-def atmospheric_structure_glob(Rp):
-    return GLOB_DATA['JADE'].atmospheric_structure(GLOB_DATA['t'], Rp, GLOB_DATA['Mp'], GLOB_DATA['sma'], GLOB_DATA['ecc'], acc=GLOB_DATA['acc'])
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------

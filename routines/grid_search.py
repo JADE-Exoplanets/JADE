@@ -6,9 +6,29 @@
 
 import numpy as np
 from multiprocessing import Pool
+
 from basic_functions import Rjup2orb
 
-def mara_search(function, x_min, x_max, n_points, n_workers, thresh_error=0.01, n_iter_max=20, verbose=False):
+# Global variables for multiprocessing
+_jade = None
+_t    = None
+_Mp   = None
+_sma  = None
+_ecc  = None
+_acc  = None
+
+def init_worker(jade, t, Mp, sma, ecc, acc):
+    """Initialize worker process with needed variables"""
+    global _jade, _t, _Mp, _sma, _ecc, _acc
+    _jade, _t, _Mp, _sma, _ecc, _acc = jade, t, Mp, sma, ecc, acc
+
+def worker_function(Rp):
+    """Function that worker processes will call"""
+    global _jade, _t, _Mp, _sma, _ecc, _acc
+    return _jade.atmospheric_structure(_t, Rp, _Mp, _sma, _ecc, acc=_acc)
+
+def mara_search(function, x_min, x_max, n_points, n_workers, 
+                thresh_error=0.01, n_iter_max=20, verbose=False, **kwargs):
 
     ''' Minimizes a given scalar function using brute-force grid-search using a pool of workers.
     Grid-search will iteratively select the best point and reproduce a new grid around that point.
@@ -28,7 +48,16 @@ def mara_search(function, x_min, x_max, n_points, n_workers, thresh_error=0.01, 
         #print("Running grid search on {}. Bounds : [{},{}]".format(function.__name__,x_min,x_max))
 
     # 1. Define a pool of workers
-    pool = Pool(processes=n_workers)    
+    if all(k in kwargs for k in ['jade', 't', 'Mp', 'sma', 'ecc', 'acc']):
+        # Check if we have the necessary kwargs to initialize workers
+        pool = Pool(processes=n_workers, initializer=init_worker,
+                    initargs=(kwargs['jade'], kwargs['t'], kwargs['Mp'], 
+                              kwargs['sma'], kwargs['ecc'], kwargs['acc'])) 
+        used_function = worker_function
+    else:
+        # Fall back to original behavior (for backward compatibility)
+        pool = Pool(processes=n_workers)
+        used_function = function
     
     # 2. Run a loop 
     current_x_min, current_x_max = x_min, x_max
@@ -53,7 +82,7 @@ def mara_search(function, x_min, x_max, n_points, n_workers, thresh_error=0.01, 
         grid_points = np.linspace(current_x_min, current_x_max, n)
 
         # 2.b distribute the computation
-        grid_images = pool.map(function,grid_points)
+        grid_images = pool.map(used_function, grid_points)
 
         # 2.c Get the best point and define new bounds
         best_point_index = np.argmin(grid_images)

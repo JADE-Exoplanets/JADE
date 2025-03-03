@@ -240,10 +240,38 @@ def detect_cpu():
     return cpu_info
 
 def check_uv_available():
-    """Check if UV is available in the system."""
+    """Check if UV is available in the system with robust detection."""
     try:
+        # First try direct command
         result = run_command(["uv", "--version"], verbose=False, check=False)
-        return result.returncode == 0
+        if result.returncode == 0:
+            return True
+        
+        # Check common installation locations
+        possible_paths = [
+            os.path.expanduser("~/.cargo/bin/uv"),
+            os.path.expanduser("~/.local/bin/uv"),
+            "/usr/local/bin/uv"
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path) and os.access(path, os.X_OK):
+                # Add to PATH for this session
+                os.environ["PATH"] = os.path.dirname(path) + os.pathsep + os.environ["PATH"]
+                print_info(f"Found UV at {path}")
+                return True
+                
+        # Try using which/where command
+        if platform.system() == "Windows":
+            cmd = ["where", "uv"]
+        else:
+            cmd = ["which", "uv"]
+            
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0 and result.stdout.strip():
+            return True
+            
+        return False
     except:
         return False
 
@@ -263,15 +291,52 @@ def install_uv():
             curl_cmd = "curl -LsSf https://astral.sh/uv/install.sh | sh"
             subprocess.run(curl_cmd, shell=True, check=True)
             
-            # Verify installation
-            uv_path = os.path.expanduser("~/.cargo/bin/uv")
-            if os.path.exists(uv_path):
-                # Add to PATH for this session
-                os.environ["PATH"] = os.path.expanduser("~/.cargo/bin") + os.pathsep + os.environ["PATH"]
-                print_success("UV installed successfully!")
-                return True
+            # Check multiple possible installation locations
+            possible_paths = [
+                os.path.expanduser("~/.cargo/bin/uv"),
+                os.path.expanduser("~/.local/bin/uv"),
+                "/usr/local/bin/uv"
+            ]
+            
+            uv_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    uv_path = path
+                    uv_dir = os.path.dirname(path)
+                    # Add to PATH for this session
+                    os.environ["PATH"] = uv_dir + os.pathsep + os.environ["PATH"]
+                    print_success(f"UV installed successfully at {path}")
+                    return True
+            
+            # Try to find uv in PATH
+            try:
+                which_result = subprocess.run(["which", "uv"], capture_output=True, text=True, check=False)
+                if which_result.returncode == 0 and which_result.stdout.strip():
+                    uv_path = which_result.stdout.strip()
+                    print_success(f"UV found in PATH at {uv_path}")
+                    return True
+            except:
+                pass
+                
+            print_warning("UV was installed but couldn't be automatically found")
+            print_info("You may need to restart your terminal or add it to PATH manually")
+            
+            # Ask user if they want to continue with UV anyway
+            user_input = input("  Try to use UV anyway? (y/n): ").strip().lower()
+            if user_input == 'y':
+                # Check if we can run uv directly
+                try:
+                    result = subprocess.run(["uv", "--version"], capture_output=True, text=True, check=False)
+                    if result.returncode == 0:
+                        print_success("UV is accessible by command - continuing with UV")
+                        return True
+                except:
+                    pass
+                    
+                print_warning("UV installation verification failed")
+                return False
             else:
-                print_error("UV installation failed")
+                print_info("Will not use UV for installation")
                 return False
     except Exception as e:
         print_error(f"UV installation failed: {str(e)}")
@@ -353,6 +418,10 @@ def setup_environment(env_name=".venv", method="auto", force=False):
     print('')
 
     print_header("JADE ENVIRONMENT SETUP")
+    
+    # Default values for safety - ensure these variables are always defined
+    installation_path = None
+    activate_cmd = None
     
     # Get current directory
     current_dir = os.path.abspath(os.getcwd())
@@ -507,7 +576,8 @@ def setup_environment(env_name=".venv", method="auto", force=False):
             
             installation_path = local_venv_path
     
-    else:  # pip method
+    # This might happen if UV installation failed and we fallback to pip
+    if method == "pip":
         # Create virtual environment
         print_step(f"Creating virtual environment at: {local_venv_path}")
         venv_cmd = [sys.executable, "-m", "venv", local_venv_path]
@@ -537,6 +607,15 @@ def setup_environment(env_name=".venv", method="auto", force=False):
             activate_cmd = f"source {venv_bin}/activate"
         
         installation_path = local_venv_path
+    
+    # Safety check to ensure we don't have a reference error
+    if installation_path is None:
+        print_error("Failed to create environment - installation path not set")
+        sys.exit(1)
+        
+    if activate_cmd is None:
+        print_error("Failed to create environment - activation command not set")
+        sys.exit(1)
     
     # Print activation instructions
     print_header("INSTALLATION COMPLETE")

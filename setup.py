@@ -69,74 +69,170 @@ def print_error(text):
     print(f"  {Colors.RED}✗ {text}{Colors.END}")
 
 def run_command(cmd, verbose=True, check=True, capture_output=True):
-    """Run a shell command and return the output."""
+    """Run a shell command and return the output with robust error handling."""
     if verbose:
         print(f"  {Colors.BOLD}$ {' '.join(cmd)}{Colors.END}")
     
-    if capture_output:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-    else:
-        # Show output directly
-        result = subprocess.run(cmd)
-    
-    if check and result.returncode != 0:
-        print_error(f"Command failed with exit code {result.returncode}")
-        if capture_output and result.stderr:
-            print(f"{Colors.RED}{result.stderr}{Colors.END}")
-        if not verbose:
-            print_error(f"Failed command: {' '.join(cmd)}")
+    try:
+        if capture_output:
+            result = subprocess.run(cmd, capture_output=True, text=True)
+        else:
+            # Show output directly
+            result = subprocess.run(cmd)
+        
+        if check and result.returncode != 0:
+            print_error(f"Command failed with exit code {result.returncode}")
+            if capture_output and result.stderr:
+                print(f"{Colors.RED}{result.stderr}{Colors.END}")
+            if not verbose:
+                print_error(f"Failed command: {' '.join(cmd)}")
+        
         return result
-    
-    return result
+    except FileNotFoundError:
+        # Command not found error - this happens when the executable doesn't exist
+        print_error(f"Command not found: {cmd[0]}")
+        # Create a dummy result object
+        class DummyResult:
+            def __init__(self):
+                self.returncode = 127  # Standard "command not found" exit code
+                self.stdout = ""
+                self.stderr = f"Command not found: {cmd[0]}"
+        
+        return DummyResult()
+    except Exception as e:
+        # Handle other exceptions
+        print_error(f"Error executing command: {str(e)}")
+        # Create a dummy result object
+        class DummyResult:
+            def __init__(self):
+                self.returncode = 1
+                self.stdout = ""
+                self.stderr = str(e)
+        
+        return DummyResult()
 
 def detect_cpu():
-    """Detect CPU architecture and brand."""
+    """Detect CPU architecture and brand with robust fallbacks."""
     print_step("Detecting system architecture")
     
-    cpu_info = {}
+    cpu_info = {"type": "unknown", "brand": "Unknown CPU"}
     
-    # For macOS
-    if platform.system() == "Darwin":
-        result = run_command(["sysctl", "-n", "machdep.cpu.brand_string"], verbose=False)
-        cpu_brand = result.stdout.strip()
+    try:
+        # For macOS
+        if platform.system() == "Darwin":
+            try:
+                # Try sysctl, but don't fail if it's not available
+                result = run_command(["sysctl", "-n", "machdep.cpu.brand_string"], 
+                                    verbose=False, check=False)
+                
+                if result.returncode == 0:
+                    cpu_brand = result.stdout.strip()
+                    
+                    # Check if Apple Silicon
+                    if platform.machine() == "arm64":
+                        cpu_info = {"type": "apple_silicon", "brand": "Apple Silicon"}
+                    else:
+                        cpu_info = {"type": "intel", "brand": cpu_brand}
+                else:
+                    # Fallback for macOS
+                    if platform.machine() == "arm64":
+                        cpu_info = {"type": "apple_silicon", "brand": "Apple Silicon"}
+                    else:
+                        cpu_info = {"type": "intel", "brand": "Intel CPU (macOS)"}
+            except:
+                # Even more robust fallback for macOS
+                if platform.machine() == "arm64":
+                    cpu_info = {"type": "apple_silicon", "brand": "Apple Silicon"}
+                else:
+                    cpu_info = {"type": "intel", "brand": "Intel CPU (macOS)"}
         
-        # Check if Apple Silicon
-        if platform.machine() == "arm64":
-            cpu_info = {"type": "apple_silicon", "brand": "Apple Silicon"}
-        else:
-            cpu_info = {"type": "intel", "brand": cpu_brand}
-    
-    # For Linux
-    elif platform.system() == "Linux":
-        try:
-            with open("/proc/cpuinfo", "r") as f:
-                for line in f:
-                    if "model name" in line:
-                        cpu_brand = re.sub(".*model name.*:", "", line, 1).strip()
+        # For Linux
+        elif platform.system() == "Linux":
+            try:
+                if os.path.exists("/proc/cpuinfo"):
+                    with open("/proc/cpuinfo", "r") as f:
+                        proc_info = f.read()
+                        
+                        # Check for AMD
+                        if "AMD" in proc_info:
+                            cpu_info = {"type": "amd", "brand": "AMD CPU"}
+                            # Try to get more specific brand info
+                            for line in proc_info.split("\n"):
+                                if "model name" in line:
+                                    cpu_brand = re.sub(".*model name.*:", "", line, 1).strip()
+                                    cpu_info["brand"] = cpu_brand
+                                    break
+                        else:
+                            # Assume Intel (most common)
+                            cpu_info = {"type": "intel", "brand": "Intel CPU"}
+                            # Try to get more specific brand info
+                            for line in proc_info.split("\n"):
+                                if "model name" in line:
+                                    cpu_brand = re.sub(".*model name.*:", "", line, 1).strip()
+                                    cpu_info["brand"] = cpu_brand
+                                    break
+                else:
+                    # Fallback based on architecture
+                    arch = platform.machine().lower()
+                    if "amd" in arch:
+                        cpu_info = {"type": "amd", "brand": f"AMD CPU ({arch})"}
+                    else:
+                        cpu_info = {"type": "intel", "brand": f"Intel CPU ({arch})"}
+            except:
+                # Fallback to platform.processor()
+                processor = platform.processor()
+                if processor:
+                    if "amd" in processor.lower():
+                        cpu_info = {"type": "amd", "brand": processor}
+                    else:
+                        cpu_info = {"type": "intel", "brand": processor}
+        
+        # For Windows
+        elif platform.system() == "Windows":
+            try:
+                # Try with wmic
+                result = run_command(["wmic", "cpu", "get", "name"], verbose=False, check=False)
+                if result.returncode == 0:
+                    lines = result.stdout.strip().split('\n')
+                    if len(lines) > 1:
+                        cpu_brand = lines[1].strip()
                         if "AMD" in cpu_brand:
                             cpu_info = {"type": "amd", "brand": cpu_brand}
-                            break
                         else:
                             cpu_info = {"type": "intel", "brand": cpu_brand}
-                            break
-        except:
-            cpu_info = {"type": "unknown", "brand": platform.processor()}
-    
-    # For Windows
-    elif platform.system() == "Windows":
-        result = run_command(["wmic", "cpu", "get", "name"], verbose=False, check=False)
-        if result.returncode == 0:
-            lines = result.stdout.strip().split('\n')
-            if len(lines) > 1:
-                cpu_brand = lines[1].strip()
-                if "AMD" in cpu_brand:
-                    cpu_info = {"type": "amd", "brand": cpu_brand}
                 else:
-                    cpu_info = {"type": "intel", "brand": cpu_brand}
-    
-    # Default fallback
-    if not cpu_info:
-        cpu_info = {"type": "unknown", "brand": platform.processor()}
+                    # Fallback to platform.processor() on Windows
+                    processor = platform.processor()
+                    if processor:
+                        if "amd" in processor.lower():
+                            cpu_info = {"type": "amd", "brand": processor}
+                        else:
+                            cpu_info = {"type": "intel", "brand": processor}
+            except:
+                # Even more fallback for Windows
+                processor = platform.processor()
+                if processor:
+                    if "amd" in processor.lower():
+                        cpu_info = {"type": "amd", "brand": processor}
+                    else:
+                        cpu_info = {"type": "intel", "brand": processor}
+    except Exception as e:
+        # Ultimate fallback - if all else fails
+        print_warning(f"CPU detection encountered an error: {str(e)}")
+        print_warning("Using fallback CPU detection")
+        
+        # Try to make a best guess based on platform.machine()
+        machine = platform.machine().lower()
+        if "arm" in machine or "aarch" in machine:
+            if platform.system() == "Darwin":
+                cpu_info = {"type": "apple_silicon", "brand": "Apple Silicon"}
+            else:
+                cpu_info = {"type": "arm", "brand": f"ARM CPU ({machine})"}
+        elif "amd" in machine:
+            cpu_info = {"type": "amd", "brand": f"AMD CPU ({machine})"}
+        else:
+            # Default to Intel as most common
+            cpu_info = {"type": "intel", "brand": f"Intel CPU ({machine})"}
     
     print_info(f"Detected CPU: {cpu_info['brand']}")
     print_info(f"Architecture: {cpu_info['type'].upper()}")
@@ -457,7 +553,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Set up an optimized environment for JADE")
     parser.add_argument("--env", default=".venv", help="Environment name or path (default: .venv)")
     parser.add_argument("--method", choices=["auto", "conda", "uv", "pip"], default="auto", 
-                        help="Installation method: auto (detect best), conda, uv, or pip (default: auto)")
+                        help="Installation method: auto (detect best), conda (Intel), uv (Python 3.8), or pip")
     parser.add_argument("--force", action="store_true", help="Force recreation if environment exists")
     args = parser.parse_args()
     

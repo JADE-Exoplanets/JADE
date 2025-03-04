@@ -559,10 +559,78 @@ def setup_environment(env_name=".venv", method="auto", force=False):
             print_step("Installing dependencies with UV")
             print_info("Installing packages (this will be fast!)...")
             
-            # Use the system's UV to install packages into the venv 
-            # Rather than trying to use UV from within the venv
-            run_command(["uv", "pip", "install", "--python", python_cmd, "-r", "requirements.txt"], 
-                       capture_output=False)
+            # For Apple Silicon, we need to be more careful with package versions
+            if cpu_info['type'] == "apple_silicon":
+                print_info("Detected Apple Silicon - using optimized installation approach")
+                
+                # First install numpy and scipy with binary wheels
+                print_info("Installing numpy and scipy with binary wheels...")
+                run_command(["uv", "pip", "install", "--python", python_cmd, 
+                           "numpy==1.24.4", "scipy==1.10.1", "--no-binary=:none:"], 
+                          capture_output=False)
+                
+                # Then install the rest of the requirements while skipping already installed packages
+                print_info("Installing remaining packages...")
+                result = run_command(["uv", "pip", "install", "--python", python_cmd, "-r", "requirements.txt", 
+                                     "--no-binary=:none:", "--ignore-installed"],
+                                   check=False, capture_output=True)
+                
+                # If that fails, try installing packages one by one
+                if result.returncode != 0:
+                    print_warning("Bulk installation failed. Trying one-by-one installation...")
+                    
+                    # Read requirements.txt
+                    with open("requirements.txt", "r") as f:
+                        requirements = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+                    
+                    # Install each package separately, skipping numpy and scipy
+                    for req in requirements:
+                        # Skip numpy and scipy as we've already installed them
+                        if req.startswith("numpy") or req.startswith("scipy"):
+                            continue
+                            
+                        print_info(f"Installing {req}...")
+                        run_command(["uv", "pip", "install", "--python", python_cmd, req, 
+                                   "--no-binary=:none:"], check=False)
+            else:
+                # For non-Apple Silicon, just use the normal installation
+                run_command(["uv", "pip", "install", "--python", python_cmd, "-r", "requirements.txt", 
+                           "--no-binary=:none:"], capture_output=False)
+            
+            # Verify installation before running benchmark
+            print_step("Verifying installation")
+            numpy_check = run_command([python_cmd, "-c", "import numpy; print(numpy.__version__)"], check=False)
+            
+            if numpy_check.returncode != 0:
+                print_warning("NumPy installation verification failed")
+                print_info("Trying alternative installation method...")
+                
+                # Fall back to pip if UV failed
+                venv_pip = os.path.join(venv_bin, "pip")
+                
+                # Update pip first
+                run_command([python_cmd, "-m", "pip", "install", "--upgrade", "pip"])
+                
+                # Install key scientific packages with specific versions known to work on Apple Silicon
+                if cpu_info['type'] == "apple_silicon":
+                    print_info("Installing numpy and scipy with pip...")
+                    run_command([venv_pip, "install", "numpy==1.24.4", "scipy==1.10.1"])
+                    
+                    # Then try installing the rest
+                    print_info("Installing remaining packages...")
+                    run_command([venv_pip, "install", "-r", "requirements.txt", "--ignore-installed"], check=False)
+                else:
+                    # For non-Apple Silicon
+                    run_command([venv_pip, "install", "-r", "requirements.txt"])
+                
+                # Verify installation again
+                numpy_check = run_command([python_cmd, "-c", "import numpy; print(numpy.__version__)"], check=False)
+                if numpy_check.returncode != 0:
+                    print_error("NumPy installation failed. Environment may not be fully functional.")
+                else:
+                    print_success("NumPy installation successful!")
+            else:
+                print_success(f"NumPy installed successfully: {numpy_check.stdout.strip()}")
             
             # Run benchmark
             benchmark_time = run_benchmark(python_cmd)

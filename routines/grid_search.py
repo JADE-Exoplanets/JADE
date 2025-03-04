@@ -4,6 +4,7 @@
 #--- Authors: Victor Ruelle, Mara Attia
 #--------------------------------------------------------------------------------------------
 
+import os
 import sys
 import numpy as np
 import multiprocessing as mp
@@ -14,13 +15,17 @@ from basic_functions import Rjup2orb
 # Set more efficient start method for macOS at module import time
 if sys.platform == 'darwin':
     try:
-        mp.set_start_method('fork', force=True)
+        # On Apple Silicon, stick with 'spawn' (we'll optimize it differently)
+        # On Intel Macs, use 'fork' for better performance
+        if 'arm' in os.uname().machine:
+            mp.set_start_method('spawn')
+        else:
+            mp.set_start_method('fork')
     except RuntimeError:
         # Method already set, ignore
         pass
 
 # Global variables for multiprocessing
-_pool = None  # Persistent pool for reuse
 _jade = None
 _t    = None
 _Mp   = None
@@ -38,36 +43,11 @@ def worker_function(Rp):
     global _jade, _t, _Mp, _sma, _ecc, _acc
     return _jade.atmospheric_structure(_t, Rp, _Mp, _sma, _ecc, acc=_acc)
 
-# Get and configure pool (create once, reuse many times)
-def get_pool(n_workers, jade, t, Mp, sma, ecc, acc):
-    """Get or create a worker pool with updated parameters"""
-    global _pool
-    
-    if _pool is None:
-        # Create pool once and reuse it
-        _pool = Pool(processes=n_workers, initializer=init_worker, 
-                     initargs=(jade, t, Mp, sma, ecc, acc))
-    else:
-        # Try to update worker data without recreating pool
-        try:
-            # Apply init function to update globals in worker processes
-            results = []
-            for _ in range(min(10, n_workers)):
-                results.append(_pool.apply_async(lambda: init_worker(jade, t, Mp, sma, ecc, acc)))
-            # Wait for all updates to complete
-            for r in results:
-                r.get(timeout=1)
-        except:
-            # If updating fails, recreate the pool
-            try:
-                _pool.close()
-                _pool.join()
-            except:
-                pass
-            _pool = Pool(processes=n_workers, initializer=init_worker, 
-                         initargs=(jade, t, Mp, sma, ecc, acc))
-    
-    return _pool
+# Separate update function to avoid lambda pickling issues
+def update_worker_globals(jade, t, Mp, sma, ecc, acc):
+    """Update global variables in worker process"""
+    init_worker(jade, t, Mp, sma, ecc, acc)
+    return True
 
 def mara_search(function, x_min, x_max, n_points, n_workers, 
                 thresh_error=0.01, n_iter_max=20, verbose=False, **kwargs):
@@ -85,32 +65,27 @@ def mara_search(function, x_min, x_max, n_points, n_workers,
         - y_min : (float) minimum found
     '''
     
-    global _pool
-    
     if verbose and hasattr(function, '__name__'):
         print(f"Running grid search on {function.__name__}. Bounds: [{x_min},{x_max}]")
 
-    # 1. Define a pool of workers
+    # For Apple Silicon, use a smaller number of workers to prevent resource exhaustion
+    if sys.platform == 'darwin' and 'arm' in os.uname().machine:
+        # Limit to 75% of available processors on Apple Silicon for stability
+        n_workers = min(n_workers, max(2, int(mp.cpu_count() * 0.75)))
+        
+    # 1. Create a new pool for each call (safer for Apple Silicon)
+    pool = None
     try:
         # Check if we have the necessary kwargs to initialize workers
         if all(k in kwargs for k in ['jade', 't', 'Mp', 'sma', 'ecc', 'acc']):
-            # Try to get or reuse a persistent pool
-            try:
-                pool = get_pool(n_workers, kwargs['jade'], kwargs['t'], kwargs['Mp'],
-                               kwargs['sma'], kwargs['ecc'], kwargs['acc'])
-                should_close_pool = False  # We'll keep the pool for future use
-                used_function = worker_function
-            except Exception as e:
-                # If pool reuse fails, create a new one-time pool
-                pool = Pool(processes=n_workers, initializer=init_worker,
-                            initargs=(kwargs['jade'], kwargs['t'], kwargs['Mp'],
-                                      kwargs['sma'], kwargs['ecc'], kwargs['acc']))
-                should_close_pool = True  # We'll close this temporary pool
-                used_function = worker_function
+            # Create a fresh pool with initializer
+            pool = Pool(processes=n_workers, initializer=init_worker,
+                        initargs=(kwargs['jade'], kwargs['t'], kwargs['Mp'],
+                                  kwargs['sma'], kwargs['ecc'], kwargs['acc']))
+            used_function = worker_function
         else:
-            # Fall back to original behavior (for backward compatibility)
+            # Fall back to original behavior
             pool = Pool(processes=n_workers)
-            should_close_pool = True  # We'll close this pool
             used_function = function
         
         # 2. Run a loop 
@@ -129,14 +104,17 @@ def mara_search(function, x_min, x_max, n_points, n_workers,
 
             if iteration > n_iter_max or step == 0.: 
                 if verbose: print('----')
-                if should_close_pool:
-                    pool.close()
                 return -1, -1
 
             grid_points = np.linspace(current_x_min, current_x_max, n)
 
             # 2.b distribute the computation with optimized chunk size
-            chunk_size = max(1, len(grid_points) // (n_workers * 2))
+            # On Apple Silicon, use larger chunks to reduce communication overhead
+            if sys.platform == 'darwin' and 'arm' in os.uname().machine:
+                chunk_size = max(1, len(grid_points) // n_workers)
+            else:
+                chunk_size = max(1, len(grid_points) // (n_workers * 2))
+                
             grid_images = pool.map(used_function, grid_points, chunksize=chunk_size)
 
             # 2.c Get the best point and define new bounds
@@ -148,29 +126,40 @@ def mara_search(function, x_min, x_max, n_points, n_workers,
 
             if verbose:
                 print(f" Iteration {iteration:02d} | Best point: {best_point/Rjup2orb:.15f} Rjup | Best image: {best_image:.5e}")
+    
+        if verbose: print('----')
+        return best_point, best_image
+        
+    except Exception as e:
+        # If multiprocessing fails, try a simpler approach as fallback
+        if verbose:
+            print(f"Multiprocessing error: {e}")
+            print("Falling back to sequential processing")
+            
+        # Manually compute in sequence as a fallback
+        best_point = None
+        best_image = float('inf')
+        
+        for Rp in np.linspace(x_min, x_max, n_points):
+            if all(k in kwargs for k in ['jade', 't', 'Mp', 'sma', 'ecc', 'acc']):
+                image = kwargs['jade'].atmospheric_structure(kwargs['t'], Rp, kwargs['Mp'], kwargs['sma'], kwargs['ecc'], acc=kwargs['acc'])
+            else:
+                image = function(Rp)
+                
+            if image < best_image:
+                best_image = image
+                best_point = Rp
+                
+        return best_point, best_image
         
     finally:
-        # Close the pool if it was created just for this call
-        if 'pool' in locals() and 'should_close_pool' in locals() and should_close_pool:
+        # Always ensure the pool is properly closed and joined
+        if pool is not None:
             try:
                 pool.close()
+                pool.join()
             except:
                 pass
-    
-    if verbose: print('----')
-    return best_point, best_image
-
-# Register cleanup function to be called at exit
-import atexit
-def cleanup():
-    global _pool
-    if _pool is not None:
-        try:
-            _pool.close()
-            _pool.join()
-        except:
-            pass
-atexit.register(cleanup)
 
 ## Testing
 

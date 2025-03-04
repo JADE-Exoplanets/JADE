@@ -553,19 +553,18 @@ def setup_environment(env_name=".venv", method="auto", force=False):
             
             # Get path to the virtual environment executables
             venv_bin = os.path.join(local_venv_path, "Scripts" if is_windows else "bin")
+            python_cmd = os.path.join(venv_bin, "python")
             
             # Install dependencies with UV
             print_step("Installing dependencies with UV")
             print_info("Installing packages (this will be fast!)...")
             
-            # If this is a non-Windows system, we need to use the UV from the venv
-            uv_cmd = os.path.join(venv_bin, "uv")
-            
-            run_command([uv_cmd, "pip", "install", "-r", "requirements.txt"], 
+            # Use the system's UV to install packages into the venv 
+            # Rather than trying to use UV from within the venv
+            run_command(["uv", "pip", "install", "--python", python_cmd, "-r", "requirements.txt"], 
                        capture_output=False)
             
             # Run benchmark
-            python_cmd = os.path.join(venv_bin, "python")
             benchmark_time = run_benchmark(python_cmd)
             
             # Get venv activation command

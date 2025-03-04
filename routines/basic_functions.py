@@ -6,7 +6,7 @@
 
 import numpy as np
 import os
-from math import pi
+from scipy import interpolate
 from astropy import units as u
 from astropy.units import cds
 from astropy import constants as const
@@ -250,3 +250,23 @@ def flush_out(path, name):
             os.remove(path.rstrip('/') + '/' + ff)
         except TypeError:
             pass
+
+
+#----------------------------------------------------------------------------------------------------------------------------------------
+# Function that interpolates 1D datapoints.
+# 
+# Input:
+# +++ xth (numpy array): 1D values for which the data has to be interpolated.
+# +++ xdata (numpy array): 1D original abscissa data points. Must be sorted in ascending order.
+# +++ ydata (numpy array): 1D original ordinate data points.
+# 
+# Output:
+# +++ yth (numpy array): interpolated 1D values at xth.
+
+def interpol(xth, xdata, ydata, kind='nearest'):
+    if len(xdata) == 1:
+        yth = np.ones(len(xth))*ydata
+    else:
+        finterpol = interpolate.interp1d(xdata, ydata, kind=kind, bounds_error=False, fill_value=(ydata[0], ydata[-1]))     
+        yth = finterpol(np.asarray(xth))
+    return yth

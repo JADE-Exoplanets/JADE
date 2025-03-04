@@ -30,6 +30,8 @@ All these components interact holistically, making JADE a unique tool for studyi
 
 ## Installation Guide
 
+**Important note for macOS users:** make sure the Command Line Tools are installed before doing anything.
+
 First, clone the JADE repository:
    ```bash
    git clone https://github.com/JADE-Exoplanets/JADE.git

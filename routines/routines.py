@@ -24,7 +24,7 @@ import warnings
 from chgcoord import ell2cart
 from basic_functions import str_to_bool, format_time, create_dir, last_out, flush_out, convert_mass, convert_distance, minimize_manual, round_vector, heaviside3, \
                             Lcgs2orb, Rjup2orb, Rearth2orb, Rcgs2orb, Patm2si, Patm2cgs, Patm2orb, Pbar2atm, rhosi2atm, rhocgs2atm, opcgs2atm, opcgs2orb, Tatm2cgs, \
-                            matm2orb, mcgs2orb, morb2earth, rhocgs2orb, Lsun2orb
+                            matm2orb, mcgs2orb, morb2earth, rhocgs2orb, Lsun2orb, interpol
 from interpolation import Saumon, Opacities, Gamma, StarLum, PlanetLum, PlanetRad
 
 

@@ -65,101 +65,90 @@ launch_unfinished = False
 
 # Options for the bash files: number of CPUs per simulation, partition name, required time (None if not included in the bash files)
 ncpu = 1
-partition = 'private-astro-cpu'
-reqtime = '6-23'
+partition = ''
+reqtime = ''
+
+# Input path (relative to input/) where the input folder will be stored (can be nested folders) 
+input_tree = ''
 
 # Name of the exploration. 
-# Input files will be stored in 'input/name/' as 'name_000001.txt', 'name_000002.txt', etc...
-# Bash files will be stored in 'scripts/name/' as 'name_000001.bash', 'name_000002.bash', etc...
-name = 'GJ436_qd_grid_80'
+# Input files will be stored in 'input/input_tree/name/' as 'name_000001.txt', 'name_000002.txt', etc...
+# The output_dir will be set to 'input_tree/name/name_000001', 'input_tree/name/name_000002', etc...
+# Bash files will be stored in 'scripts/input_tree/name/' as 'name_000001.bash', 'name_000002.bash', etc...
+name = ''
 
 # Invariant parameters in the exploration. Do not change the keys!
 constant_param = {
 	
-	'output_freq':'10',
-	'output_npts':'5000',
-	'age' : '8000.',
-	't_init' : '10.',
-	'dyn' : 'True',
-	'orderdyn' : '2',
-	'perturber' : 'True',
-	'tides' : 'True',
-	'relat' : 'True',
-	'roche' : 'True',
-	'atmo' : 'True',
-	'atmo_acc' : 'False',
-	'atmo_grid_path' : 'GJ436_2c.npz',
-	'evap' : 'True',
-	't_atmo' : '',
-	'parallel' : 'True',
-	'lazy_init' : 'False',
-	'reuse' : 'True',
-	'simul' : 'True',
+	'output_freq' :      '',
+	'output_npts' :      '',
+	'age' :              '',
+	't_init' :           '',
 
-	'Ms' : '0.445',
-	'Rs' : '0.425',
-	'ks' : '0.01',
-	'Qs' : '10**5',
-	'alphas' : '0.08',
-	'spins' : '280.',
-	          
-	'Mcore' : '0.068213*0.89',
-	'Mpl' : '',
-	'Rpl' : '',
-	'kpl' : '0.25',
-	'Qpl' : '10**5',
-	'alphapl' : '0.25',
-	'spinpl' : '',
-	          
-	'stellar_lum' : 'tabular',
-	'stellar_lum_path' : 'GJ436_lum.txt',
-	'Lbol' : '',
-	'LX_Lbol_sat' : '',
-	'tau_X_bol_sat' : '',
-	'alpha_X_bol' : '',
-	'YHe' : '0.15',
-	'Zmet' : '0.00001',
-	'fmantle' : '0.66',
-	          
-	'Mpert' : '',
+	'dyn' :              '',
+	'orderdyn' :         '',
+	'perturber' :        '',
+	'tides' :            '',
+	'relat' :            '',
+	'roche' :            '',
 
-	'planet_sma' : '',
-	'planet_ecc' : '0.0001',
-	'planet_incl' : '0.',
-	'planet_lambd' : '0.',
-	'planet_omega' : '90.',
-	'planet_Omega' : '90.',
-	          
-	'pert_sma' : '20.',
-	'pert_ecc' : '0.0001',
-	'pert_incl' : '80.',
-	'pert_lambd' : '0.',
-	'pert_omega' : '90.',
-	'pert_Omega' : '90.',
+	'atmo' :             '',
+	'atmo_acc' :         '',
+	'atmo_grid_path' :   '',
+	'evap' :             '',
+	't_atmo' :           '',
+	'parallel' :         '',
 
-	'ecc' : '',
-	'incl' : '',
-	'sma' : '',
-	'proj_obl' : '',
-	'true_obl' : '',
-	'Menv' : '',
-	'radius' : '',
-	'init_prof' : '',
-	'ang_mom_rel_error' : '',
-	'ang_mom_cumul_error' : '',
-	'time_units' : 'Gyr',
-	'atmo_profiles' : '',
-	'atmo_profiles_t' : ''
+	'lazy_init' :        '',
+	'reuse' :            '',
+	'simul' :            '',
+
+	'Ms' :               '',
+	'Rs' :               '',
+	'ks' :               '',
+	'Qs' :               '',
+	'alphas' :           '',
+	'spins' :            '',
+	          
+	'Mcore' :            '',
+	'Mpl' :              '',
+	'Rpl' :              '',
+	'kpl' :              '',
+	'Qpl' :              '',
+	'alphapl' :          '',
+	'spinpl' :           '',
+	          
+	'stellar_lum' :      '',
+	'stellar_lum_path' : '',
+	'Lbol' :             '',
+	'LX_Lbol_sat' :      '',
+	'tau_X_bol_sat' :    '',
+	'alpha_X_bol' :      '',
+
+	'YHe' :              '',
+	'Zmet' :             '',
+	'fmantle' :          '',
+	          
+	'Mpert' :            '',
+
+	'planet_sma' :       '',
+	'planet_ecc' :       '',
+	'planet_incl' :      '',
+	'planet_lambd' :     '',
+	'planet_omega' :     '',
+	'planet_Omega' :     '',
+	          
+	'pert_sma' :         '',
+	'pert_ecc' :         '',
+	'pert_incl' :        '',
+	'pert_lambd' :       '',
+	'pert_omega' :       '',
+	'pert_Omega' :       '',
 
 }
 
 # Parameters to explore.
-variable_param = [
-				  				{'Mpl':['0.06898814772727273', '0.06960151918577445', '0.07022589542020774', '0.07086157527393996', '0.07150886850961538', '0.07216809631246968', '0.07283959182174338', '0.0735237006920415', '0.07422078168662674', '0.07493120730478589', '0.07565536444557476', '0.0763936551104263', '0.0771464971473029', '0.07791432503928758', '0.07869759074074073', '0.07949676456440405', '0.08031233612311015', '0.08114481533006']},
-				  				{'planet_sma':['0.1', '0.11836734693877551', '0.13673469387755102', '0.15510204081632656', '0.17346938775510207', '0.19183673469387758', '0.21020408163265308', '0.2285714285714286', '0.2469387755102041', '0.2653061224489796', '0.2836734693877551', '0.3020408163265306', '0.3204081632653062', '0.3387755102040817', '0.3571428571428572', '0.3755102040816327', '0.3938775510204082', '0.41224489795918373', '0.43061224489795924', '0.44897959183673475', '0.46734693877551026', '0.48571428571428577', '0.5040816326530613', '0.5224489795918368', '0.5408163265306123', '0.5591836734693878', '0.5775510204081633', '0.5959183673469388', '0.6142857142857143', '0.6326530612244898', '0.6510204081632653', '0.6693877551020408', '0.6877551020408164', '0.7061224489795919', '0.7244897959183674', '0.7428571428571429', '0.7612244897959184', '0.7795918367346939', '0.7979591836734694', '0.8163265306122449', '0.8346938775510204', '0.8530612244897959', '0.8714285714285714', '0.889795918367347', '0.9081632653061225', '0.926530612244898', '0.9448979591836735', '0.963265306122449', '0.9816326530612246', '1.0', '0.27448979591836736', '0.29285714285714287', '0.3112244897959184', '0.32959183673469394', '0.34795918367346945', '0.36632653061224496', '0.38469387755102047', '0.403061224489796', '0.4214285714285715', '0.439795918367347', '0.4581632653061225'],
-				  				 'spinpl':['132.5', '102.9', '82.9', '68.6', '58.0', '49.9', '43.5', '38.4', '34.2', '30.7', '27.7', '25.2', '23.1', '21.3', '19.6', '18.2', '17.0', '15.8', '14.8', '13.9', '13.1', '12.4', '11.7', '11.1', '10.5', '10.0', '9.5', '9.1', '8.7', '8.3', '8.0', '7.7', '7.3', '7.1', '6.8', '6.5', '6.3', '6.1', '5.9', '5.7', '5.5', '5.3', '5.2', '5.0', '4.8', '4.7', '4.6', '4.4', '4.3', '4.2', '29.1', '26.4', '24.1', '22.2', '20.4', '18.9', '17.6', '16.4', '15.3', '14.4', '13.5']},
- 				  				{'Mpert':['505.56933254371233', '429.4133089678868', '364.72898581681034', '309.7883328644275', '263.1236203067307', '223.4882086202369', '189.8232448081168', '161.22937533009286', '136.94272003204327', '116.31446522310222', '98.7935307329268', '83.91184790263904', '71.27185521358103', '60.5358775018218', '51.417105026014205', '43.67193139599925', '37.09344567127822', '31.50590477191755', '26.760038533323247', '22.729061980255604', '19.30528828869159', '16.397251951411207', '13.92726529318674', '11.82934305831107', '10.047439626189078', '8.533951762518903', '7.248446907326463', '6.156583026293399', '5.229191169398304', '4.441496227587798', '3.7724550701301918', '3.2041943811084006', '2.7215331769537348', '2.3115772491610618', '1.9633746977944186', '1.667623353421721', '1.4164222713074275', '1.2030606590745765', '1.0218385990760896', '0.8679147761052839', '0.7371771425183684', '0.6261330656106092', '0.5318160225527756', '0.45170635025965034', '0.3836639330373803', '0.3258710297721048', '0.27678371329834056', '0.23509062465845468', '0.19967794038058298', '0.16959961688203265', '55.79049714201426', '47.38654116177904', '40.24850822822241', '34.18570705692057', '29.036170989366454', '24.66233108240039', '20.947340978281076', '17.791955374952583', '15.111878705393572', '12.835513196487907', '10.9020461472083', '9.259825328089', '7.864979101072254', '6.680244396474952', '5.673971236687839', '4.819277212634483', '4.093329324978347', '3.4767340045932564', '2.953019016802169', '2.5081934085479296', '2.13037374256257', '1.809466633447349', '1.536899104671124', '1.305389563022097']}
-								 ]			
+variable_param = []			
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -171,7 +160,9 @@ def explore(c_param, v_param, idx=0):
 	for sim in tqdm(sims):
 		idx += 1
 		fname = '{}_{:06d}'.format(name, idx)
-		to_file = {'name' : fname, 'output_dir': '{}/{}'.format(name, fname)}
+		itree = input_tree.rstrip('/')
+		if itree != '': itree += '/'
+		to_file = {'name' : fname, 'output_dir': '{}{}/{}'.format(itree, name, fname)}
 		for k in c_param: to_file[k] = c_param[k]
 		for p in sim:
 			k, v = p
@@ -214,7 +205,9 @@ def explore2(i_path, c_param, v_param, idx=0):
 	for i, mm in enumerate(tqdm(m)):
 		idx += 1
 		fname = '{}_{:06d}'.format(name, idx)
-		to_file = {'name' : fname, 'output_dir': '{}/{}'.format(name, fname)}
+		itree = input_tree.rstrip('/')
+		if itree != '': itree += '/'
+		to_file = {'name' : fname, 'output_dir': '{}{}/{}'.format(itree, name, fname)}
 		for k in c_param: to_file[k] = c_param[k]
 		for p in l[i]:
 			k, v = p
@@ -329,7 +322,7 @@ def write_jobarray(mpath, ipath, name, path, idx_start, idx_end):
 	f.write('#SBATCH --cpus-per-task={}\n'.format(ncpu))
 	f.write('#SBATCH --partition={}\n'.format(partition))
 	f.write('#SBATCH --time={}\n'.format(reqtime))
-	#Yann said no more than 1000 files per directory. This actually makes 1000 .out and 1000 .err
+	#No more than 1000 files per directory. This actually makes 1000 .out and 1000 .err
 	f.write('#SBATCH --array={}-{}\n'.format(idx_start, idx_end))
 	f.write('#SBATCH --hint=nomultithread\n')
 	f.write('printf -v NUM %.5d $SLURM_ARRAY_TASK_ID\n')
@@ -407,21 +400,19 @@ if __name__ == '__main__':
 
 	# Creating the directories
 	global_path = os.path.dirname(os.path.realpath(__file__)) + '/../'
-	try:
-		os.mkdir(global_path +  'input/' + name)
-	except FileExistsError:
-		pass
+	inp_tree = input_tree.rstrip('/')
+	if inp_tree != '': inp_tree += '/'
+	os.makedirs(global_path +  'input/' + inp_tree + name, exist_ok=True)
+
 	if create_bash or create_jobarray:
-		try:
-			os.mkdir(global_path + 'scripts/' + name)
-		except FileExistsError:
-			pass
-	input_path = global_path + 'input/' + name + '/'
-	bash_path = global_path + 'scripts/' + name + '/'
+			os.makedirs(global_path + 'scripts/' + inp_tree + name, exist_ok=True)
+
+	input_path = global_path + 'input/' + inp_tree + name + '/'
+	bash_path = global_path + 'scripts/' + inp_tree + name + '/'
 	if verbose:
-		print('+ The input files will be stored in input/' + name + '/')
-		if create_bash: print('+ The bash files will be stored in scripts/' + name + '/')
-		if create_jobarray: print('+ The jobarray bash files will be stored in scripts/' + name + '/')
+		print('+ The input files will be stored in input/' + inp_tree + name + '/')
+		if create_bash: print('+ The bash files will be stored in scripts/' + inp_tree + name + '/')
+		if create_jobarray: print('+ The jobarray bash files will be stored in scripts/' + inp_tree + name + '/')
 
 	# Creating the input and bash files
 	if verbose: print('+ Generating files... ')
@@ -436,13 +427,13 @@ if __name__ == '__main__':
 			to_bash = [sim.replace('.txt', '.bash') for sim in f if not f[sim]]
 		else:
 			to_bash = ['{}/{}_{:06d}.bash'.format(name, name, i) for i in range(idx0 + 1, idx + 1)]
-		write_masterbash(name, to_bash, global_path + 'scripts/')
+		write_masterbash(name, to_bash, global_path + 'scripts/' + inp_tree)
 	if create_jobarray:
-		write_jobarray('{}routines/main.py'.format(global_path), '{}input/{}'.format(global_path, name), name, '{}/{}_{}.sh'.format(bash_path, name, idx), idx0 + 1, idx)
+		write_jobarray('{}routines/main.py'.format(global_path), '{}{}'.format(input_path, name), name, '{}/{}_{}.sh'.format(bash_path, name, idx), idx0 + 1, idx)
 	if verbose:
 		print('Successfully created', str(idx - idx0), 'input file(s).')
-		if create_bash: print('+ Master bash file: scripts/' + name + '.bash')
+		if create_bash: print('+ Master bash file: scripts/' + inp_tree + name + '.bash')
 
 	# Creating the info file
 	write_info(input_path, name)
-	if verbose: print('+ Info file: input/' + name + '/' + name + '.info')
+	if verbose: print('+ Info file: input/' + inp_tree + name + '/' + name + '.info')

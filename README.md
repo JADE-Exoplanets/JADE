@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15167399.svg)](https://doi.org/10.5281/zenodo.15167399)
+
 # JADE: Joining Atmosphere and Dynamics for Exoplanets
 
 JADE is a comprehensive Python framework for simulating the coupled evolution of exoplanetary atmospheres and orbital dynamics in hierarchical three-body systems.

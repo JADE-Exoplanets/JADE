@@ -10,9 +10,9 @@ authors:
   - family-names: "et al."
 title: "JADE: Joining Atmosphere and Dynamics for Exoplanets"
 version: 1.0.0
-doi: 10.1051/0004-6361/202039452
 date-released: 2021-03-01
-url: "https://github.com/JADE-Exoplanets/JADE"
+doi: 10.5281/zenodo.15167399
+url: "https://doi.org/10.5281/zenodo.15167399"
 repository-code: "https://github.com/JADE-Exoplanets/JADE"
 license: BSD-3-Clause
 references:
@@ -32,6 +32,23 @@ references:
     year: 2021
     doi: 10.1051/0004-6361/202039452
     url: "https://doi.org/10.1051/0004-6361/202039452"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Attia"
+      given-names: "M."
+    - family-names: "Bourrier"
+      given-names: "V."
+    - family-names: "Eggenberger"
+      given-names: "P."
+    - family-names: "et al."
+  title: "The JADE code: Coupling secular exoplanetary dynamics and photo-evaporation"
+  journal: "Astronomy & Astrophysics"
+  volume: 647
+  article-number: A40
+  year: 2021
+  doi: 10.1051/0004-6361/202039452
+  url: "https://doi.org/10.1051/0004-6361/202039452"
 abstract: >
   JADE (Joining Atmosphere and Dynamics for Exoplanets) couples the most relevant mechanisms affecting close-orbiting exoplanets. 
   It simulates the evolution of a hierarchical three-body system to monitor von Zeipel–Lidov–Kozai resonances 
